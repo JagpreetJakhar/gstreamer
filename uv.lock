@@ -3,7 +3,7 @@ revision = 1
 requires-python = ">=3.12.3"
 
 [[package]]
-name = "gstreamer"
+name = "gstreamer-tutorials"
 version = "0.1.0"
 source = { editable = "." }
 dependencies = [
