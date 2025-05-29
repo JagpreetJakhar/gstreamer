@@ -1,17 +1,18 @@
+import sys
+import gi
+import logging
+
+gi.require_version("GLib","2.0")
+gi.require_version("GObject","2.0")
+gi.require_version("Gst","1.0")
+
+from gi.repository import Gst,GLib,GObject
+
+logging.basicConfig(level=logging.DEBUG,format="[%(name)s] [%(levelname)8s] - %(message)s")
+logger = logging.getLogger(__name__)
+
+
 def main():
-    import sys
-    import gi
-    import logging
-
-    gi.require_version("GLib","2.0")
-    gi.require_version("GObject","2.0")
-    gi.require_version("Gst","1.0")
-
-    from gi.repository import Gst,GLib,GObject
-
-    logging.basicConfig(level=logging.DEBUG,format="[%(name)s] [%(levelname)8s] - %(message)s")
-    logger = logging.getLogger(__name__)
-
     Gst.init(sys.argv[1:])
 
     source = Gst.ElementFactory.make("videotestsrc","source") #type,name

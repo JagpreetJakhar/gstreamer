@@ -1,50 +1,51 @@
+import sys
+import logging
+import gi
+
+gi.require_version("Gst", "1.0")
+gi.require_version("GObject", "2.0")
+from gi.repository import Gst, GObject
+
+logging.basicConfig(level=logging.DEBUG, format="[%(name)s] [%(levelname)8s] - %(message)s")
+logger = logging.getLogger(__name__)
+class CustomData:
+    def __init__(self):
+        self.pipeline = None
+        self.source = None
+        self.aconvert = None
+        self.vconvert=None
+        self.aresample = None
+        self.asink = None
+        self.vsink=None
+
+
+def pad_added_handler(src, new_pad, data):
+    asink_pad = data.aconvert.get_static_pad("sink")
+    vsink_pad = data.vconvert.get_static_pad("sink")
+    if asink_pad.is_linked() and vsink_pad.is_linked():
+        logger.info("Audio sink already linked. Ignoring.")
+        return
+
+    new_pad_caps = new_pad.get_current_caps()
+    new_pad_struct = new_pad_caps.get_structure(0)
+    new_pad_type = new_pad_struct.get_name()
+    
+
+    if not new_pad_type.startswith("audio/x-raw") and not new_pad_type.startswith("video/x-raw"):
+        logger.info(f"It has type '{new_pad_type}' which is not raw audio. Ignoring.")
+        return
+    aret = new_pad.link(asink_pad)
+    vret = new_pad.link(vsink_pad)
+    if aret == Gst.PadLinkReturn.OK:
+        logger.info(f"Link succeeded (type '{new_pad_type}').")
+    elif vret == Gst.PadLinkReturn.OK:
+        logger.info(f"Link succeeded (type '{new_pad_type}').")
+    else:
+        logger.warning(f"Type is '{new_pad_type}' but link failed.")
+
+
+
 def main():
-    import sys
-    import logging
-    import gi
-
-    gi.require_version("Gst", "1.0")
-    gi.require_version("GObject", "2.0")
-    from gi.repository import Gst, GObject
-
-    logging.basicConfig(level=logging.DEBUG, format="[%(name)s] [%(levelname)8s] - %(message)s")
-    logger = logging.getLogger(__name__)
-    class CustomData:
-        def __init__(self):
-            self.pipeline = None
-            self.source = None
-            self.aconvert = None
-            self.vconvert=None
-            self.aresample = None
-            self.asink = None
-            self.vsink=None
-
-
-    def pad_added_handler(src, new_pad, data):
-        asink_pad = data.aconvert.get_static_pad("sink")
-        vsink_pad = data.vconvert.get_static_pad("sink")
-        if asink_pad.is_linked() and vsink_pad.is_linked():
-            logger.info("Audio sink already linked. Ignoring.")
-            return
-
-        new_pad_caps = new_pad.get_current_caps()
-        new_pad_struct = new_pad_caps.get_structure(0)
-        new_pad_type = new_pad_struct.get_name()
-        
-
-        if not new_pad_type.startswith("audio/x-raw") and not new_pad_type.startswith("video/x-raw"):
-            logger.info(f"It has type '{new_pad_type}' which is not raw audio. Ignoring.")
-            return
-        aret = new_pad.link(asink_pad)
-        vret = new_pad.link(vsink_pad)
-        if aret == Gst.PadLinkReturn.OK:
-            logger.info(f"Link succeeded (type '{new_pad_type}').")
-        elif vret == Gst.PadLinkReturn.OK:
-            logger.info(f"Link succeeded (type '{new_pad_type}').")
-        else:
-            logger.warning(f"Type is '{new_pad_type}' but link failed.")
-
-
     Gst.init(sys.argv[1:])
 
     data = CustomData()
